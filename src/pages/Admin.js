@@ -1,62 +1,148 @@
+import { useEffect, useState } from "react";
 import "../App.css";
 
 function Admin(){
 
-  const reports = [
-    {name:"Wallet", location:"Library", status:"Lost"},
-    {name:"Phone", location:"Cafeteria", status:"Lost"},
-    {name:"Keys", location:"Parking Area", status:"Found"},
-    {name:"Laptop Charger", location:"Computer Lab", status:"Found"}
-  ]
+const [data,setData] = useState({
+lostItems: [],
+foundItems: [],
+claims: []
+});
 
-  return(
+useEffect(()=>{
 
-    <div className="items-page">
+fetch("http://localhost:5000/admin-data")
+.then(res => res.json())
+.then(data => setData(data));
 
-      <h2 className="page-title">🛠 Admin Dashboard</h2>
+},[]);
 
-      <div className="cards-grid">
+/* UPDATE CLAIM STATUS */
 
-        <div className="item-card">
-          <h3>Total Lost Items</h3>
-          <p style={{fontSize:"28px"}}>6</p>
-        </div>
+const updateClaim = async (index,status)=>{
 
-        <div className="item-card">
-          <h3>Total Found Items</h3>
-          <p style={{fontSize:"28px"}}>8</p>
-        </div>
+await fetch("http://localhost:5000/update-claim",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body: JSON.stringify({index,status})
+});
 
-        <div className="item-card">
-          <h3>Claims Pending</h3>
-          <p style={{fontSize:"28px"}}>3</p>
-        </div>
+window.location.reload();
 
-      </div>
+};
 
-      <h3 style={{marginTop:"40px"}}>Recent Reports</h3>
+/* DELETE / RESOLVE LOST ITEM */
 
-      <div className="cards-grid">
+const deleteItem = async (index)=>{
 
-        {reports.map((item,index)=>(
-          <div key={index} className="item-card">
+  const confirmAction = window.confirm(
+    "Are you sure this item has been returned?"
+  );
 
-            <h3>{item.name}</h3>
+  if(!confirmAction) return;
 
-            <p>📍 {item.location}</p>
+  await fetch("http://localhost:5000/delete-item",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({index})
+  });
 
-            <p>{item.status}</p>
+  window.location.reload();
 
-            <button>Mark Resolved</button>
+};
 
-          </div>
-        ))}
+return(
 
-      </div>
+<div className="items-page">  
+  <h2 className="page-title">🛠 Admin Dashboard</h2>
 
+<div className="stats-grid">
+
+  <div className="stat-card">
+    <h4>Lost Items</h4>
+    <p>{data.lostItems.length}</p>
+  </div>
+
+  <div className="stat-card">
+    <h4>Found Items</h4>
+    <p>{data.foundItems.length}</p>
+  </div>
+
+  <div className="stat-card">
+    <h4>Claims</h4>
+    <p>{data.claims.length}</p>
+  </div>
+
+</div>
+
+  <h3 className="section-title">Lost Items</h3>  <div className="admin-grid">
+  {data.lostItems.map((item,index)=>(
+    <div className="item-card" key={index}>
+      <h4>{item.itemName}</h4>
+      <p>{item.description}</p>
+      <p>{item.location}</p>  
+      {data.claims.some(
+  claim => claim.item === item.itemName && claim.status === "Approved"
+) && (
+  <button onClick={()=>deleteItem(index)}>
+    Resolve
+  </button>
+)}
+
+</div>
+
+))}
+
+  </div>{/* FOUND ITEMS */}
+
+  <h3 className="section-title">Found Items</h3>  <div className="admin-grid">
+  {data.foundItems.map((item,index)=>(
+    <div className="item-card" key={index}>
+      <h4>{item.itemName}</h4>
+      <p>{item.description}</p>
+      <p>{item.location}</p>
     </div>
+  ))}
+  </div>{/* CLAIMS */}
 
-  )
+  <h3 className="section-title">Claims</h3>  <div className="admin-grid">
+  {data.claims.map((claim,index)=>(
+    <div className="item-card" key={index}>  <h4>{claim.name}</h4>
+  <p>Item: {claim.item}</p>
+  <p>{claim.description}</p>
+
+  <p className={claim.status==="Approved" ? "status-approved":"status-rejected"}>
+  Status: {claim.status}
+  </p>
+
+  <div className="admin-buttons">
+
+    <button
+    className="approve-btn"
+    onClick={()=>updateClaim(index,"Approved")}
+    >
+    Approve
+    </button>
+
+    <button
+    className="reject-btn"
+    onClick={()=>updateClaim(index,"Rejected")}
+    >
+    Reject
+    </button>
+
+  </div>
+
+</div>
+
+))}
+
+  </div></div>);
+
 }
 
 export default Admin;

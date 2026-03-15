@@ -19,6 +19,8 @@ function Navbar() {
 
       <Link to="/admin">🛠 Admin</Link>
 
+      <Link to="/claim-status">Claim Status</Link>
+
     </div>
   );
 }

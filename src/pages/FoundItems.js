@@ -1,42 +1,46 @@
-import ItemCard from "../components/ItemCard";
+import { useEffect, useState } from "react";
 import "../App.css";
 
-function FoundItems(){
+function FoundItems() {
 
-  const items = [
-    {name:"Keys", location:"Parking Area"},
-    {name:"ID Card", location:"Cafeteria"},
-    {name:"Watch", location:"Library"},
-    {name:"Water Bottle", location:"Sports Ground"},
-    {name:"Laptop Charger", location:"Computer Lab"},
-    {name:"Earphones", location:"Bus Stop"},
-    {name:"Notebook", location:"Classroom 204"},
-    {name:"Umbrella", location:"Main Gate"}
-  ];
+  const [items,setItems] = useState([]);
 
-  return(
+  useEffect(()=>{
+
+    fetch("http://localhost:5000/found-items")
+    .then(res => res.json())
+    .then(data => setItems(data));
+
+  },[]);
+
+  return (
 
     <div className="items-page">
 
-      <h2 className="page-title">✅ Found Items</h2>
+      <h2 className="page-title">📦 Found Items</h2>
 
       <div className="cards-grid">
 
         {items.map((item,index)=>(
-          <ItemCard
-            key={index}
-            name={item.name}
-            location={item.location}
-            status="Found"
-          />
+          <div className="item-card" key={index}>
+
+            <div className="item-info">
+              <h3>{item.itemName}</h3>
+              <p>{item.location}</p>
+              <p>{item.description}</p>
+            </div>
+
+            <div className="item-footer">
+              <span className="status">Found</span>
+            </div>
+
+          </div>
         ))}
 
       </div>
 
     </div>
-
-  )
-
+  );
 }
 
 export default FoundItems;

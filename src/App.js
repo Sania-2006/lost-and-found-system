@@ -8,6 +8,7 @@ import ReportFound from "./pages/ReportFound";
 import LostItems from "./pages/LostItems";
 import FoundItems from "./pages/FoundItems";
 import Admin from "./pages/Admin";
+import ClaimStatus from "./pages/ClaimStatus";
 function App() {
   return (
     <BrowserRouter>
@@ -29,6 +30,8 @@ function App() {
         <Route path="/claimitem" element={<ClaimItem />} />
 
         <Route path="/admin" element={<Admin/>}/>
+
+        <Route path="/claim-status" element={<ClaimStatus />}/>
 
       </Routes>
 
